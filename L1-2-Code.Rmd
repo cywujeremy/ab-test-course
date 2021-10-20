@@ -1,0 +1,129 @@
+---
+pdf_document: default
+author: "Pedro Ferreira"
+date: "FALL 2021"
+output:
+  pdf_document:
+    keep_tex: yes
+title: "A/B Testing L1-2"
+html_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo=T,warning=F)
+
+#install.packages("data.table")
+library(data.table)
+#install.packages("stargazer")
+library(stargazer)
+#install.packages("ggplot2")
+library(ggplot2)
+
+# SET YOUR WORKING DIRECTORY HERE
+setwd("/Users/pedroferreira/Box/TEACH/ABT-F2021/CODE/L1/")
+
+#clear environment
+rm(list=ls());gc()
+
+```
+
+```{r}
+
+#load data, check names, plot leases, plot prices
+MyData = fread('L1-2.csv',verbose= F)
+MyData<-data.table(MyData)
+hist(MyData$leases)
+hist(MyData$price)
+
+#plot leases as a function of price 
+ggplot(MyData,aes( x = leases, y = price)) +
+  geom_point() +
+  labs(title="Relationship between leases and price", x="leases", y="price") +
+  theme_bw(base_size=14)
+
+```
+
+```{r}
+
+#regress leases on price
+ols <-lm(leases ~ price, data = MyData)
+ols_log <-lm(leases ~ log(price), data = MyData)
+stargazer(ols,ols_log,
+          title="OLS of leases on price",
+          type="text",
+          model.numbers=FALSE)
+
+#plot estimated linear demand curve
+ggplot(MyData,aes( x = leases, y = price)) +
+  geom_point(color = 'blue') +
+  geom_smooth(method = "lm",color='red') +
+  labs(title="Relationship between leases and price", x="leases", y="price") +
+  theme_bw(base_size=14)
+
+```
+
+```{r}
+
+#plot histogram for likes
+hist(MyData$likes)
+
+#add likes to regression
+ols_likes <-lm(leases ~ log(price) + log(likes+1), data = MyData)
+stargazer(ols_log,ols_likes,
+          title="OLS of leases on price",
+          type="text",
+          model.numbers=FALSE)
+
+```
+
+```{r}
+
+#plot histogram for year release
+hist(MyData$year_release)
+
+#add year_release to regression
+ols_year <-lm(leases ~ log(price) + log(likes+1) + year_release, data = MyData)
+stargazer(ols_log,ols_likes,ols_year,
+          title="OLS of leases on price",
+          type="text",
+          model.numbers=FALSE)
+```
+
+```{r}
+
+#add other versions of year_release to regression
+ols_year2 <-lm(leases ~ log(price) + log(likes+1) + year_release
+               +I(year_release^2), data = MyData)
+stargazer(ols_log,ols_likes,ols_year,ols_year2,
+                           title="OLS of leases on price",
+                           type="text",
+                           model.numbers=FALSE)
+```
+
+
+```{r}
+
+#add other versions of year_release to regression
+ols_year3 <-lm(leases ~ log(price) + log(likes+1) + year_release
+               + I(year_release^2)+I(year_release^3), data = MyData)
+stargazer(ols_log,ols_likes,ols_year,ols_year2,ols_year3,
+                           title="OLS of leases on price",
+                           type="text",
+                           model.numbers=FALSE)
+```
+
+```{r}
+
+#add other versions of year_release to regression
+ols_yearf <-lm(leases ~ log(price) + log(likes+1) + factor(year_release), data = MyData)
+stargazer(ols_log,ols_likes,ols_year,ols_year2,ols_year3,ols_yearf,
+                           title="OLS of leases on price",
+                           type="text",
+                           model.numbers=FALSE,
+                           omit = "factor[(]year_release[)]",
+                           add.lines = list (c("Year Dummies","No","No","No","No","No","Yes")))
+```
+

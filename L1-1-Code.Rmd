@@ -1,0 +1,76 @@
+---
+pdf_document: default
+author: "Pedro Ferreira"
+date: "FALL 2021"
+output:
+  pdf_document:
+    keep_tex: yes
+title: "A/B Testing L1-1"
+html_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo=T,warning=F)
+
+#install.packages("data.table")
+library(data.table)
+#install.packages("stargazer")
+library(stargazer)
+
+# SET YOUR WORKING DIRECTORY HERE
+setwd("/Users/pedroferreira/Box/TEACH/ABT-F2021/CODE/L1/")
+
+#clear environment
+rm(list=ls());gc()
+
+```
+
+```{r}
+
+#generate simulated dataset, you can jumpt to load the data
+gender=sample(0:1,1000,TRUE)
+weight=rnorm(1000, mean = 180, sd = 40) + gender*rnorm(1000,mean=-15,sd=20)
+  #weight in lb for men and women
+height=rnorm(1000, mean = 70, sd = 1) + gender*rnorm(1000,mean=-6,sd=0.5)
+#height in in for men and women
+bmi=weight/height/height*703 + rnorm(1000, mean=0, sd = 3)
+
+Data<-data.frame(gender, weight, height, bmi)
+fwrite(Data, file='L1-1.csv', sep=',')
+
+```
+
+```{r}
+
+#load data
+MyData = fread('L1-1.csv', verbose=F)
+
+#averages weight and gender
+avg_weight<-lm(weight~1,data=MyData)
+avg_gender<-lm(gender~1,data=MyData)
+avg_weight_gender<-lm(weight~gender,data=MyData)
+stargazer(avg_weight,avg_gender,
+          avg_weight_gender,
+          type="text",
+          model.numbers = F)
+
+#direct inspection
+mean(MyData$weight)
+mean(MyData$gender)
+mean(MyData$weight[MyData$gender==0])
+mean(MyData$weight[MyData$gender==1])
+
+```
+
+```{r}
+
+#BMI as a function of weight and height
+bmi_wh<-lm(log(bmi)~log(weight)+log(height),data=MyData)
+bmi_whg<-lm(log(bmi)~log(weight)*gender+log(height)*gender,data=MyData)
+stargazer(bmi_wh,bmi_whg,type="text",model.numbers = F)
+
+```
+
