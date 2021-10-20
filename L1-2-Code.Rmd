@@ -23,17 +23,17 @@ library(stargazer)
 library(ggplot2)
 
 # SET YOUR WORKING DIRECTORY HERE
-setwd("/Users/pedroferreira/Box/TEACH/ABT-F2021/CODE/L1/")
+#setwd("/Users/pedroferreira/Box/TEACH/ABT-F2021/CODE/L1/")
 
 #clear environment
-rm(list=ls());gc()
+#rm(list=ls());gc()
 
 ```
 
 ```{r}
 
 #load data, check names, plot leases, plot prices
-MyData = fread('L1-2.csv',verbose= F)
+MyData = fread('data/L1-2.csv',verbose= F)
 MyData<-data.table(MyData)
 hist(MyData$leases)
 hist(MyData$price)
@@ -119,7 +119,14 @@ stargazer(ols_log,ols_likes,ols_year,ols_year2,ols_year3,
 
 #add other versions of year_release to regression
 ols_yearf <-lm(leases ~ log(price) + log(likes+1) + factor(year_release), data = MyData)
-stargazer(ols_log,ols_likes,ols_year,ols_year2,ols_year3,ols_yearf,
+# stargazer(ols_log,ols_likes,ols_year,ols_year2,ols_year3,ols_yearf,
+#                            title="OLS of leases on price",
+#                            type="text",
+#                            model.numbers=FALSE,
+#                            omit = "factor[(]year_release[)]",
+#                            add.lines = list (c("Year Dummies","No","No","No","No","No","Yes")))
+
+stargazer(ols_year2,ols_year3,ols_yearf,
                            title="OLS of leases on price",
                            type="text",
                            model.numbers=FALSE,
